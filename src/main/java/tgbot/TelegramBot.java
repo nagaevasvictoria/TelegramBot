@@ -44,7 +44,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             );
         }
     }
-
     @Override
     public String getBotUsername() {
         return dotenv.get("BOT_USERNAME");
