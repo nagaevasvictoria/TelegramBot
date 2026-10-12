@@ -9,16 +9,21 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
  * Бот, который обрабатывает сообщения пользователей
  */
 public class TelegramBot extends TelegramLongPollingBot {
-
-    private final Dotenv dotenv = Dotenv.load();
+    /**
+     * Обрабатывает команды и текстовые сообщения пользователей
+     */
     private final BotLogic botLogic = new BotLogic();
-
+    /**
+     * Создаёт объект Telegram-бота и передаёт токен родительскому классу
+     */
+    public TelegramBot() {
+        super(Dotenv.load().get("BOT_TOKEN"));
+    }
     @Override
     public void onUpdateReceived(Update update) {
         if (!update.hasMessage() || !update.getMessage().hasText()) {
             return;
         }
-
         String text = update.getMessage().getText();
         String answer = botLogic.botMessage(text);
         String chatId = update.getMessage().getChatId().toString();
@@ -45,12 +50,5 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
     @Override
-    public String getBotUsername() {
-        return dotenv.get("BOT_USERNAME");
-    }
-
-    @Override
-    public String getBotToken() {
-        return dotenv.get("BOT_TOKEN");
-    }
+    public String getBotUsername() {return Dotenv.load().get("BOT_USERNAME");}
 }
