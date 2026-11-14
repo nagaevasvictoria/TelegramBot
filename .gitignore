@@ -4,3 +4,11 @@ target/
 .vscode/
 .DS_Store
 .env
+recipes.db
+recipes.db-journal
+recipes.db-wal
+recipes.db-shm
+recipes.json
+out/
+.DS_Store
+Thumbs.db
