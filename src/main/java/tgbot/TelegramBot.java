@@ -5,33 +5,53 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
 /**
- * Бот, который обрабатывает сообщения пользователей
+ * Бот, который обрабатывает сообщения пользователей.
  */
 public class TelegramBot extends TelegramLongPollingBot {
+
     /**
-     * Обрабатывает команды и текстовые сообщения пользователей
+     * Имя файла с рецептами.
      */
-    private final BotLogic botLogic = new BotLogic();
+    private static final String RECIPES_FILE = "recipes.json";
+
     /**
-     * Создаёт объект Telegram-бота и передаёт токен родительскому классу
+     * Настройки из файла .env, загружаются один раз.
+     */
+    private static final Dotenv DOTENV = Dotenv.load();
+
+    /**
+     * Логика диалога бота.
+     */
+    private final BotLogic botLogic;
+
+    /**
+     * Создаёт объект Telegram-бота и передаёт токен родительскому классу.
      */
     public TelegramBot() {
-        super(Dotenv.load().get("BOT_TOKEN"));
+        super(DOTENV.get("BOT_TOKEN"));
+        botLogic = new BotLogic(
+                new SessionStorage(),
+                new RecipeRepository(RECIPES_FILE),
+                new IngredientReader());
     }
+
     @Override
     public void onUpdateReceived(Update update) {
         if (!update.hasMessage() || !update.getMessage().hasText()) {
             return;
         }
         String text = update.getMessage().getText();
-        String answer = botLogic.botMessage(text);
-        String chatId = update.getMessage().getChatId().toString();
+        long chatId = update.getMessage().getChatId();
+        String answer = botLogic.handle(chatId, text);
 
-        sendMessage(chatId,answer);
+        sendMessage(String.valueOf(chatId), answer);
     }
+
     /**
-     * Отправляет сообщение в указанный чат
+     * Отправляет сообщение в указанный чат.
+     *
      * @param chatId идентификатор чата
      * @param text текст ответа
      */
@@ -49,6 +69,9 @@ public class TelegramBot extends TelegramLongPollingBot {
             );
         }
     }
+
     @Override
-    public String getBotUsername() {return Dotenv.load().get("BOT_USERNAME");}
+    public String getBotUsername() {
+        return DOTENV.get("BOT_USERNAME");
+    }
 }
